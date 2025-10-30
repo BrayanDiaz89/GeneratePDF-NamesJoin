@@ -21,4 +21,9 @@ public class ErrorHandler {
                 .map(DataErrorValidation::new).toList();
         return ResponseEntity.badRequest().body(errors);
     }
+    @ExceptionHandler(CreatePathException.class)
+    public ResponseEntity errorHandler500(CreatePathException e){
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(e.getMessage());
+    }
 }

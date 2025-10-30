@@ -2,7 +2,7 @@ package com.corona.bdiaz.generatePdf.controller;
 
 import com.corona.bdiaz.generatePdf.domain.NameDocumentGenerateRequest;
 import com.corona.bdiaz.generatePdf.service.SKUNameGeneratorService;
-import org.springframework.http.HttpStatus;
+import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,8 +18,8 @@ public class SKUNameGeneratorController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity generateFiles(@ModelAttribute NameDocumentGenerateRequest request){
-        service.generateFiles(request);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> generate(@ModelAttribute @Valid NameDocumentGenerateRequest request) {
+        return ResponseEntity.ok(service.generateFiles(request));
     }
 }
+
