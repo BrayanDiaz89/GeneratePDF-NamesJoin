@@ -1,6 +1,7 @@
 package com.corona.bdiaz.generatePdf.service;
 
 import com.corona.bdiaz.generatePdf.domain.NameDocumentGenerateRequest;
+import com.corona.bdiaz.generatePdf.infra.errors.ValidationException;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +24,8 @@ public class SKUNameGeneratorService {
     public void generateFiles(NameDocumentGenerateRequest request){
         String extension = FilenameUtils.getExtension(request.file().getOriginalFilename());
         SKUNameGenerator generator = generatorsMap.get(extension);
-        if(generator == null) throw new IllegalArgumentException("Extensión no soportada.");
+        if(generator == null) throw new ValidationException("Extensión no soportada, solo existen: " +
+                                                            generatorsMap.keySet());
         generator.generateFiles(request);
     }
 }

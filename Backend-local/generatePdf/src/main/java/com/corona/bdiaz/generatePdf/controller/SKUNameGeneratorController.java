@@ -20,6 +20,6 @@ public class SKUNameGeneratorController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity generateFiles(@ModelAttribute NameDocumentGenerateRequest request){
         service.generateFiles(request);
-        return ResponseEntity.ok(HttpStatus.ACCEPTED);
+        return ResponseEntity.ok().build();
     }
 }
