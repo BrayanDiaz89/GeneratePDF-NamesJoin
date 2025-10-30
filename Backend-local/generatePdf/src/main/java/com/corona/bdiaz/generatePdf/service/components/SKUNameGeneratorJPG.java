@@ -14,13 +14,11 @@ public class SKUNameGeneratorJPG implements SKUNameGenerator {
     private final Path outputDir;
 
     public SKUNameGeneratorJPG(Path pdfOutputDir) {
-        // Reutilizamos el mismo bean Path inyectado (carpeta de salida)
         this.outputDir = pdfOutputDir;
     }
 
     @Override
     public Map<String, Object> generateFiles(NameDocumentGenerateRequest request) {
-        // Nombre original y extensión
         String originalName = Optional.ofNullable(request.file().getOriginalFilename())
                 .orElse("image.jpeg");
         String originalExt = Optional.ofNullable(getExt(originalName)).orElse("jpeg").toLowerCase();
@@ -29,7 +27,6 @@ public class SKUNameGeneratorJPG implements SKUNameGenerator {
             throw new ValidationException("El generador JPEG solo acepta archivos .jpg o .jpeg. Recibido: " + originalExt);
         }
 
-        // baseName sin .jpg/.jpeg (case-insensitive)
         String baseName = originalName.replaceFirst("(?i)[.](jpe?g)$", "");
         int groupSize = Optional.ofNullable(request.numberOfNamesPerPdf()).orElse(10);
         if (groupSize <= 0) groupSize = 10;
@@ -46,7 +43,6 @@ public class SKUNameGeneratorJPG implements SKUNameGenerator {
             throw new ValidationException("La lista de SKUs está vacía.");
         }
 
-        // Leemos bytes una sola vez
         final byte[] bytes;
         try {
             bytes = request.file().getBytes();
@@ -63,11 +59,9 @@ public class SKUNameGeneratorJPG implements SKUNameGenerator {
             String prefix = prefixRaw.replaceAll("[^a-zA-Z0-9\\-]", "_");
             if (prefix.length() > 150) prefix = prefix.substring(0, 150);
 
-            // preserva extensión original (jpg o jpeg)
             String filename = prefix + "-" + baseName + "." + originalExt;
             Path destination = outputDir.resolve(filename);
 
-            // Control de longitud de ruta
             if (destination.toString().length() > 255) {
                 int exceso = destination.toString().length() - 255;
                 if (exceso < prefix.length()) {
@@ -101,7 +95,6 @@ public class SKUNameGeneratorJPG implements SKUNameGenerator {
 
     @Override
     public String getSupportedExtension() {
-        // El servicio mapea "jpg" -> "jpeg", así que con "jpeg" basta
         return "jpg";
     }
 }

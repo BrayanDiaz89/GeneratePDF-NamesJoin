@@ -30,7 +30,6 @@ public class SKUNameGeneratorService {
                 .orElse("")
                 .toLowerCase();
 
-        // alias: trata "jpg" como "jpeg"
         if ("jpeg".equals(extension)) extension = "jpg";
 
         SKUNameGenerator generator = generatorsMap.get(extension);
