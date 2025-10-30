@@ -2,20 +2,26 @@ package com.corona.bdiaz.generatePdf.service.components;
 
 import com.corona.bdiaz.generatePdf.domain.NameDocumentGenerateRequest;
 import com.corona.bdiaz.generatePdf.domain.ResponseFromProcessedFiles;
+import com.corona.bdiaz.generatePdf.infra.errors.CreatePathException;
 import jakarta.validation.ValidationException;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.nio.file.*;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Component
 public class SKUNameGeneratorJPG implements SKUNameGenerator {
 
     private final Path outputDir;
 
-    public SKUNameGeneratorJPG(Path pdfOutputDir) {
-        this.outputDir = pdfOutputDir;
+    public SKUNameGeneratorJPG(Path imgOutputDir) {
+        this.outputDir = imgOutputDir;
     }
 
     @Override
@@ -24,13 +30,8 @@ public class SKUNameGeneratorJPG implements SKUNameGenerator {
                 .orElse("image.jpeg");
         String originalExt = Optional.ofNullable(getExt(originalName)).orElse("jpeg").toLowerCase();
 
-        if (!(originalExt.equals("jpeg") || originalExt.equals("jpg"))) {
-            throw new ValidationException("El generador JPEG solo acepta archivos .jpg o .jpeg. Recibido: " + originalExt);
-        }
-
         String baseName = originalName.replaceFirst("(?i)[.](jpe?g)$", "");
-        int groupSize = Optional.ofNullable(request.numberOfNamesPerPdf()).orElse(10);
-        if (groupSize <= 0) groupSize = 10;
+        int groupSize = Optional.ofNullable(request.numberOfNamesPerPdf()).orElse(5);
 
         char separator = Optional.ofNullable(request.typeSeparator()).orElse('-');
 
@@ -39,10 +40,6 @@ public class SKUNameGeneratorJPG implements SKUNameGenerator {
                 .map(String::trim)
                 .filter(s -> !s.isBlank())
                 .toList();
-
-        if (skus.isEmpty()) {
-            throw new ValidationException("La lista de SKUs está vacía.");
-        }
 
         final byte[] bytes;
         try {
@@ -76,9 +73,9 @@ public class SKUNameGeneratorJPG implements SKUNameGenerator {
 
             try {
                 Files.write(destination, bytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-                generatedFiles.add(destination.toAbsolutePath().toString());
+                generatedFiles.add(destination.getFileName().toString());
             } catch (IOException e) {
-                throw new RuntimeException("Error guardando el archivo: " + destination, e);
+                throw new CreatePathException("Error guardando el archivo: " + destination);
             }
         }
 

@@ -3,20 +3,24 @@ package com.corona.bdiaz.generatePdf.service.components;
 import com.corona.bdiaz.generatePdf.domain.NameDocumentGenerateRequest;
 import com.corona.bdiaz.generatePdf.domain.ResponseFromProcessedFiles;
 import com.corona.bdiaz.generatePdf.infra.errors.ValidationException;
-import org.apache.pdfbox.pdmodel.PDDocument;
 import org.springframework.stereotype.Component;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 
 @Component
 public class SKUNameGeneratorPDF implements SKUNameGenerator {
 
-    private final Path outputDir;
+    private final Path OUTPUT_DIR;
 
     public SKUNameGeneratorPDF(Path pdfOutputDir) {
-        this.outputDir = pdfOutputDir;
+        this.OUTPUT_DIR = pdfOutputDir;
     }
 
     @Override
@@ -26,8 +30,7 @@ public class SKUNameGeneratorPDF implements SKUNameGenerator {
                 .orElse("document.pdf");
         String baseName = originalName.replaceFirst("(?i)[.]pdf$", "");
 
-        int groupSize = Optional.ofNullable(request.numberOfNamesPerPdf()).orElse(10);
-        if (groupSize <= 0) groupSize = 10;
+        int groupSize = Optional.ofNullable(request.numberOfNamesPerPdf()).orElse(5);
 
         char separator = Optional.ofNullable(request.typeSeparator()).orElse('-');
 
@@ -57,17 +60,17 @@ public class SKUNameGeneratorPDF implements SKUNameGenerator {
             if (prefix.length() > 150) prefix = prefix.substring(0, 150);
 
             String filename = prefix + "-" + baseName + ".pdf";
-            Path destination = outputDir.resolve(filename);
+            Path destination = OUTPUT_DIR.resolve(filename);
 
             if (destination.toString().length() > 255) {
                 prefix = prefix.substring(0, Math.max(0, prefix.length() - 50));
                 filename = prefix + "-" + baseName + ".pdf";
-                destination = outputDir.resolve(filename);
+                destination = OUTPUT_DIR.resolve(filename);
             }
 
-            try (PDDocument doc = PDDocument.load(fileBytes)) {
-                doc.save(destination.toString());
-                generatedFiles.add(destination.toAbsolutePath().toString());
+            try {
+                Files.write(destination, fileBytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                generatedFiles.add(destination.getFileName().toString());
             } catch (IOException e) {
                 throw new RuntimeException("Error guardando archivo.");
             }
@@ -75,7 +78,7 @@ public class SKUNameGeneratorPDF implements SKUNameGenerator {
 
         return new ResponseFromProcessedFiles(
                 generatedFiles.size(),
-                outputDir.toString(),
+                OUTPUT_DIR.toString(),
                 generatedFiles
         );
     }

@@ -12,7 +12,7 @@ import java.nio.file.Path;
 @EnableConfigurationProperties(StorageProperties.class)
 public class StorageConfig {
     @Bean
-    public Path pdfOutputDir(StorageProperties props) throws IOException {
+    public Path fileOutputDir(StorageProperties props) throws IOException {
         Path path = props.getOutputDir();
         Files.createDirectories(path);
         return path;

@@ -7,7 +7,6 @@ import java.nio.file.Path;
 @ConfigurationProperties(prefix = "app.storage")
 public class StorageProperties {
     private Path outputDir;
-
     public Path getOutputDir() { return outputDir; }
     public void setOutputDir(Path outputDir) { this.outputDir = outputDir; }
 }
