@@ -1,6 +1,7 @@
 package com.corona.bdiaz.generatePdf.service.components;
 
 import com.corona.bdiaz.generatePdf.domain.NameDocumentGenerateRequest;
+import com.corona.bdiaz.generatePdf.domain.ResponseFromProcessedFiles;
 import jakarta.validation.ValidationException;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +19,7 @@ public class SKUNameGeneratorJPG implements SKUNameGenerator {
     }
 
     @Override
-    public Map<String, Object> generateFiles(NameDocumentGenerateRequest request) {
+    public ResponseFromProcessedFiles generateFiles(NameDocumentGenerateRequest request) {
         String originalName = Optional.ofNullable(request.file().getOriginalFilename())
                 .orElse("image.jpeg");
         String originalExt = Optional.ofNullable(getExt(originalName)).orElse("jpeg").toLowerCase();
@@ -81,10 +82,10 @@ public class SKUNameGeneratorJPG implements SKUNameGenerator {
             }
         }
 
-        return Map.of(
-                "filesCreated", generatedFiles.size(),
-                "outputDir", outputDir.toString(),
-                "files", generatedFiles
+        return new ResponseFromProcessedFiles(
+                generatedFiles.size(),
+                outputDir.toString(),
+                generatedFiles
         );
     }
 

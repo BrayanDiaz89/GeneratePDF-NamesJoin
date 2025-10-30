@@ -1,6 +1,7 @@
 package com.corona.bdiaz.generatePdf.service;
 
 import com.corona.bdiaz.generatePdf.domain.NameDocumentGenerateRequest;
+import com.corona.bdiaz.generatePdf.domain.ResponseFromProcessedFiles;
 import com.corona.bdiaz.generatePdf.infra.errors.ValidationException;
 import com.corona.bdiaz.generatePdf.service.components.SKUNameGenerator;
 import org.apache.commons.io.FilenameUtils;
@@ -24,7 +25,7 @@ public class SKUNameGeneratorService {
                 ));
     }
 
-    public Map<String, Object> generateFiles(NameDocumentGenerateRequest request) {
+    public ResponseFromProcessedFiles generateFiles(NameDocumentGenerateRequest request) {
         String extension = Optional.ofNullable(
                         FilenameUtils.getExtension(request.file().getOriginalFilename()))
                 .orElse("")

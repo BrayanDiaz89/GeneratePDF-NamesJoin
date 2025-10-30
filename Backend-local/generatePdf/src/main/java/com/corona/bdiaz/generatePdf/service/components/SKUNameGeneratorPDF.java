@@ -1,6 +1,7 @@
 package com.corona.bdiaz.generatePdf.service.components;
 
 import com.corona.bdiaz.generatePdf.domain.NameDocumentGenerateRequest;
+import com.corona.bdiaz.generatePdf.domain.ResponseFromProcessedFiles;
 import com.corona.bdiaz.generatePdf.infra.errors.ValidationException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.springframework.stereotype.Component;
@@ -19,7 +20,7 @@ public class SKUNameGeneratorPDF implements SKUNameGenerator {
     }
 
     @Override
-    public Map<String, Object> generateFiles(NameDocumentGenerateRequest request) {
+    public ResponseFromProcessedFiles generateFiles(NameDocumentGenerateRequest request) {
 
         String originalName = Optional.ofNullable(request.file().getOriginalFilename())
                 .orElse("document.pdf");
@@ -72,10 +73,10 @@ public class SKUNameGeneratorPDF implements SKUNameGenerator {
             }
         }
 
-        return Map.of(
-                "filesCreated", generatedFiles.size(),
-                "outputDir", outputDir.toString(),
-                "files", generatedFiles
+        return new ResponseFromProcessedFiles(
+                generatedFiles.size(),
+                outputDir.toString(),
+                generatedFiles
         );
     }
 
