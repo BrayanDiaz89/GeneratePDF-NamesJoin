@@ -10,18 +10,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 public class SKUNameGeneratorJPG implements SKUNameGenerator {
 
-    private final Path outputDir;
+    private final OutputDirManager dirManager;
 
-    public SKUNameGeneratorJPG(Path imgOutputDir) {
-        this.outputDir = imgOutputDir;
+    public SKUNameGeneratorJPG(OutputDirManager dirManager) {
+        this.dirManager = dirManager;
     }
 
     @Override
@@ -31,12 +28,11 @@ public class SKUNameGeneratorJPG implements SKUNameGenerator {
         String originalExt = Optional.ofNullable(getExt(originalName)).orElse("jpeg").toLowerCase();
 
         String baseName = originalName.replaceFirst("(?i)[.](jpe?g)$", "");
-        int groupSize = Optional.ofNullable(request.numberOfNamesPerPdf()).orElse(5);
+        int groupSize = Optional.ofNullable(request.numberOfNamesPerFile()).orElse(5);
 
         char separator = Optional.ofNullable(request.typeSeparator()).orElse('-');
 
-        List<String> skus = Optional.ofNullable(request.skus()).orElse(List.of()).stream()
-                .filter(Objects::nonNull)
+        List<String> skus = Arrays.stream(request.skus().split("[,\\n;]+"))
                 .map(String::trim)
                 .filter(s -> !s.isBlank())
                 .toList();
@@ -49,16 +45,17 @@ public class SKUNameGeneratorJPG implements SKUNameGenerator {
         }
 
         List<String> generatedFiles = new ArrayList<>();
+        final Path OUTPUT_DIR = dirManager.ensure();
 
         for (int i = 0; i < skus.size(); i += groupSize) {
             List<String> batch = skus.subList(i, Math.min(i + groupSize, skus.size()));
 
             String prefixRaw = String.join(String.valueOf(separator), batch);
-            String prefix = prefixRaw.replaceAll("[^a-zA-Z0-9\\-]", "_");
+            String prefix = prefixRaw.replaceAll("[^a-zA-Z0-9\\-,.&]", "_");
             if (prefix.length() > 150) prefix = prefix.substring(0, 150);
 
             String filename = prefix + "-" + baseName + "." + originalExt;
-            Path destination = outputDir.resolve(filename);
+            Path destination = OUTPUT_DIR.resolve(filename);
 
             if (destination.toString().length() > 255) {
                 int exceso = destination.toString().length() - 255;
@@ -68,7 +65,7 @@ public class SKUNameGeneratorJPG implements SKUNameGenerator {
                     prefix = prefix.substring(0, Math.max(0, prefix.length() - 50));
                 }
                 filename = prefix + "-" + baseName + "." + originalExt;
-                destination = outputDir.resolve(filename);
+                destination = OUTPUT_DIR.resolve(filename);
             }
 
             try {
@@ -81,7 +78,7 @@ public class SKUNameGeneratorJPG implements SKUNameGenerator {
 
         return new ResponseFromProcessedFiles(
                 generatedFiles.size(),
-                outputDir.toString(),
+                OUTPUT_DIR.toString(),
                 generatedFiles
         );
     }

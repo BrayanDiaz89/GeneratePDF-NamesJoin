@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pdf Join-name</title>
+    <style>
+        body { font-family: system-ui, Arial, sans-serif; max-width: 720px; margin: 32px auto; padding: 0 16px; }
+        form { display: grid; gap: 12px; }
+        label { font-weight: 600; }
+        input, textarea, button { padding: 8px; font-size: 14px; }
+        textarea { min-height: 140px; }
+    </style>
+</head>
+<body>
+    <section class="section-form">
+        <form id="genForm" action="http://localhost:8084/generate" method="post" enctype="multipart/form-data">
+            <label for="skus">Lista de skus: </label>
+            <textarea id="skus" name="skus" placeholder="Separa la sku por coma, ejemplo (1234, 4322, 4323)" required></textarea>
+            <label for="file">Documento para realizar el join name: </label>
+            <input type="file" name="file" id="file" accept=".pdf, .jpg, .jpeg" required>
+            <label for="typeSeparator">Tipo de separador para el join: </label>
+            <input type="text" name="typeSeparator" id="typeSeparator" maxlength="1" value="-" placeholder="¿Qué separador deseas? - . , _ &" required>
+            <label for="numberOfNamesPerFile">Cantidad de skus para el join por documento: </label>
+            <input type="number" name="numberOfNamesPerFile" id="numberOfNamesPerFile" value="2" min="2" max="5" placeholder="2 hasta 5">
+            <button type="submit">Generar archivo(s)</button>
+        </form>
+        <script>
+            document.getElementById("genForm").addEventListener("submit", async function (e) {
+              e.preventDefault(); // evita recargar página
+
+              const form = e.target;
+              const formData = new FormData(form);
+
+              try {
+                const response = await fetch("http://localhost:8084/generate", {
+                  method: "POST",
+                  body: formData
+                });
+
+                if (!response.ok) {
+                  throw new Error("Error en la generación");
+                }
+
+                const result = await response.json();
+
+                alert("Documentos generados con éxito, valida en Downloads/generated-files!\nArchivos generados: " + result.filesCreated);
+
+              } catch (err) {
+                console.error(err);
+                alert("Ocurrió un error al procesar la solicitud, valide la request.");
+              }
+            });
+        </script>
+</body>
+</html>

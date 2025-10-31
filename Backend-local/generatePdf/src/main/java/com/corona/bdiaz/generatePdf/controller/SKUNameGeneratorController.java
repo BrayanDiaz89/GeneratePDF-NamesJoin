@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/generate")
+@RequestMapping
 public class SKUNameGeneratorController {
 
     private final SKUNameGeneratorService service;
@@ -18,7 +18,7 @@ public class SKUNameGeneratorController {
         this.service = service;
     }
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/generate", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ResponseFromProcessedFiles> generate(@ModelAttribute @Valid NameDocumentGenerateRequest request) {
         return ResponseEntity.ok(service.generateFiles(request));
     }

@@ -8,19 +8,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 
 @Component
 public class SKUNameGeneratorPDF implements SKUNameGenerator {
 
-    private final Path OUTPUT_DIR;
+    private final OutputDirManager dirManager;
 
-    public SKUNameGeneratorPDF(Path pdfOutputDir) {
-        this.OUTPUT_DIR = pdfOutputDir;
+    public SKUNameGeneratorPDF(OutputDirManager dirManager) {
+        this.dirManager = dirManager;
     }
 
     @Override
@@ -30,12 +27,11 @@ public class SKUNameGeneratorPDF implements SKUNameGenerator {
                 .orElse("document.pdf");
         String baseName = originalName.replaceFirst("(?i)[.]pdf$", "");
 
-        int groupSize = Optional.ofNullable(request.numberOfNamesPerPdf()).orElse(5);
+        int groupSize = Optional.ofNullable(request.numberOfNamesPerFile()).orElse(5);
 
         char separator = Optional.ofNullable(request.typeSeparator()).orElse('-');
 
-        List<String> skus = Optional.ofNullable(request.skus()).orElse(List.of()).stream()
-                .filter(Objects::nonNull)
+        List<String> skus = Arrays.stream(request.skus().split("[,\\n;]+"))
                 .map(String::trim)
                 .filter(s -> !s.isBlank())
                 .toList();
@@ -51,12 +47,14 @@ public class SKUNameGeneratorPDF implements SKUNameGenerator {
         }
 
         List<String> generatedFiles = new ArrayList<>();
+        final Path OUTPUT_DIR = dirManager.ensure();
 
         for (int i = 0; i < skus.size(); i += groupSize) {
+
             List<String> batch = skus.subList(i, Math.min(i + groupSize, skus.size()));
 
             String prefixRaw = String.join(String.valueOf(separator), batch);
-            String prefix = prefixRaw.replaceAll("[^a-zA-Z0-9\\-]", "_");
+            String prefix = prefixRaw.replaceAll("[^a-zA-Z0-9\\-,.&]", "_");
             if (prefix.length() > 150) prefix = prefix.substring(0, 150);
 
             String filename = prefix + "-" + baseName + ".pdf";
