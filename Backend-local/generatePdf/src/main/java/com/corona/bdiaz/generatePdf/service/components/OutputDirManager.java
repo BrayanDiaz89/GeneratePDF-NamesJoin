@@ -15,7 +15,7 @@ public class OutputDirManager {
         this.outputDir = fileOutputDir;
     }
 
-    public Path ensure() {
+    public Path createDirectory() {
         try {
             if (Files.exists(outputDir) && !Files.isDirectory(outputDir)) {
                 throw new IOException("La ruta existe pero no es un directorio: " + outputDir);

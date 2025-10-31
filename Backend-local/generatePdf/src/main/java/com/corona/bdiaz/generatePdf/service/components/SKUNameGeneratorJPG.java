@@ -45,7 +45,7 @@ public class SKUNameGeneratorJPG implements SKUNameGenerator {
         }
 
         List<String> generatedFiles = new ArrayList<>();
-        final Path OUTPUT_DIR = dirManager.ensure();
+        final Path OUTPUT_DIR = dirManager.createDirectory();
 
         for (int i = 0; i < skus.size(); i += groupSize) {
             List<String> batch = skus.subList(i, Math.min(i + groupSize, skus.size()));
