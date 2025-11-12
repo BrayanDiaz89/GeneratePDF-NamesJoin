@@ -29,5 +29,10 @@ public class SKUNameGeneratorController {
     public ResponseEntity<ResponseFromProcessedFiles> generate(@ModelAttribute @Valid NameDocumentGenerateRequest request) {
         return ResponseEntity.ok(service.generateFiles(request));
     }
+
+    @PostMapping(value = "/first-image-pdf", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<PdfToImageResponse> generate(@ModelAttribute @Valid PdfToImageRequest request) {
+        return ResponseEntity.ok(pdfService.processedPdfToFirstImage(request));
+    }
 }
 
